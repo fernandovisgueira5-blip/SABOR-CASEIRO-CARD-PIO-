@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sabor Caseiro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #2C1F1F;
+      color: #FFEECC;
+      max-width: 600px;
+      margin: auto;
+      padding: 10px;
+    }
+
+    .logo {
+      width: 220px;
+      display: block;
+      margin: 5px auto 15px auto;
+    }
+
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #3C2F2F;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    button {
+      background: #FF4D00;
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+
+    .controle {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    .finalizar {
+      width: 100%;
+      margin-top: 20px;
+      padding: 15px;
+      font-size: 18px;
+    }
+
+    #erro {
+      color: #ff4d4d;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<img src="logo.png" class="logo">
+
+<h3>🍽️ Pratos</h3>
+<div id="menu"></div>
+
+<h3>🥤 Bebidas</h3>
+<div id="bebidas"></div>
+
+<hr>
+
+<input id="endereco" placeholder="Digite seu endereço completo">
+<select id="pagamento">
+  <option value="">Escolher forma de pagamento</option>
+  <option>Pix</option>
+  <option>Cartão</option>
+  <option>Dinheiro</option>
+</select>
+
+<div id="erro"></div>
+
+<h3>Total: R$ <span id="total">0.00</span></h3>
+
+<button class="finalizar" onclick="enviarPedido()">🚀 FINALIZAR PEDIDO</button>
+
+<script>
+
+let itens = {
+  figado:{nome:"Fígado acebolado",preco:17,qtd:0},
+  frango_guisado:{nome:"Frango guisado",preco:17,qtd:0},
+  file_frango_frito:{nome:"Filé de frango frito",preco:18,qtd:0},
+  file_frango_empanado:{nome:"Filé de frango empanado",preco:20,qtd:0},
+  frango_parmegiana:{nome:"Frango à parmegiana",preco:27,qtd:0},
+  bife_acebolado:{nome:"Bife acebolado",preco:20,qtd:0},
+  bife_cavalo:{nome:"Bife à cavalo",preco:22,qtd:0},
+  bife_parmegiana:{nome:"Bife à parmegiana",preco:27,qtd:0},
+  carne_panela:{nome:"Carne assada de panela",preco:22,qtd:0},
+  chapa_mista:{nome:"Chapa mista",preco:18,qtd:0},
+  picanha:{nome:"Picanha com fritas",preco:37,qtd:0},
+  estrogonofe_frango:{nome:"Estrogonofe de frango",preco:22,qtd:0},
+  estrogonofe_camarao:{nome:"Estrogonofe de camarão",preco:30,qtd:0},
+  estrogonofe_carne:{nome:"Estrogonofe de carne",preco:25,qtd:0},
+  picadinho:{nome:"Picadinho com legumes",preco:20,qtd:0},
+  dourada:{nome:"Filé de dourada",preco:25,qtd:0},
+  bisteca_suina:{nome:"Bisteca suína",preco:15,qtd:0},
+  omelete:{nome:"Omelete especial",preco:17,qtd:0},
+  feijao:{nome:"Feijão carioca",preco:5,qtd:0},
+  bisteca_bovina:{nome:"Bisteca bovina",preco:20,qtd:0},
+
+  coca_lata:{nome:"Coca-Cola 350ml",preco:6.00,qtd:0},
+  fanta_laranja:{nome:"Fanta Laranja 350ml",preco:6.00,qtd:0},
+  fanta_uva:{nome:"Fanta Uva 350ml",preco:6.00,qtd:0},
+  guarana_lata:{nome:"Guaraná 350ml",preco:5.00,qtd:0},
+  coca_1l:{nome:"Coca-Cola 1L",preco:10.00,qtd:0},
+  guarana_1l:{nome:"Guaraná 1L",preco:7.00,qtd:0},
+  h2o:{nome:"H2O limão",preco:10.00,qtd:0}
+};
+
+function arredondarPreco(preco) {
+  return Math.ceil(preco);
+}
+
+function criarMenu(){
+  let pratos = "";
+  let bebidas = "";
+
+  for(let id in itens){
+    let precoExibido = arredondarPreco(itens[id].preco);
+
+    let item = `
+      <div class="item">
+        ${itens[id].nome} - R$${precoExibido.toFixed(2).replace(".", ",")}
+        <div class="controle">
+          <button onclick="add('${id}')">+</button>
+          <span id="${id}">0</span>
+          <button onclick="removeItem('${id}')">-</button>
+        </div>
+      </div>
+    `;
+
+    if(id.includes("coca") || id.includes("fanta") || id.includes("guarana") || id.includes("h2o")){
+      bebidas += item;
+    } else {
+      pratos += item;
+    }
+  }
+
+  document.getElementById("menu").innerHTML = pratos;
+  document.getElementById("bebidas").innerHTML = bebidas;
+}
+
+function add(id){
+  itens[id].qtd++;
+  atualizar();
+}
+
+function removeItem(id){
+  if(itens[id].qtd > 0){
+    itens[id].qtd--;
+  }
+  atualizar();
+}
+
+function atualizar(){
+  let total = 0;
+
+  for(let id in itens){
+    document.getElementById(id).innerText = itens[id].qtd;
+    total += itens[id].qtd * arredondarPreco(itens[id].preco);
+  }
+
+  document.getElementById("total").innerText = total.toFixed(2);
+}
+
+function enviarPedido(){
+  let endereco = document.getElementById("endereco").value.trim();
+  let pagamento = document.getElementById("pagamento").value;
+
+  document.getElementById("erro").innerText = "";
+
+  if(!endereco || !pagamento){
+    document.getElementById("erro").innerText = "❗Preencha o endereço e a forma de pagamento.";
+    return;
+  }
+
+  let texto = "🍛 *SABOR CASEIRO*\n\n📝 Pedido:\n";
+
+  let total = 0;
+
+  for(let id in itens){
+    if(itens[id].qtd > 0){
+      let precoArredondado = arredondarPreco(itens[id].preco);
+      let subtotal = itens[id].qtd * precoArredondado;
+
+      total += subtotal;
+
+      texto += itens[id].qtd + "x " + itens[id].nome + " - R$" + subtotal.toFixed(2).replace(".", ",") + "\n";
+    }
+  }
+
+  texto += "\n💰 Total: R$ " + total.toFixed(2).replace(".", ",");
+  texto += "\n💳 Pagamento: " + pagamento;
+  texto += "\n📍 Endereço: " + endereco;
+
+  window.location.href = "https://wa.me/5591980545975?text=" + encodeURIComponent(texto);
+}
+
+criarMenu();
+
+</script>
+
+</body>
+</html>
